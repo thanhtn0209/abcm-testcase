@@ -1,2 +1,2 @@
 # abcm-testcase
-This repo implement test cases for abcmouse project
+This repo implements test cases for abcmouse project
