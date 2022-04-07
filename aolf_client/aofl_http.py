@@ -138,3 +138,17 @@ class AoflClient:
         result = self.http_post(encoded_jwt, url)
 
         return result
+
+    def aofl_renew(self, galaxy_id, period, old_period):
+        url = self.url_prefix + "/Galaxy/Renew/"
+        data = {
+            "context_info": DEFAULT_CONTEXT_INFO,
+            "galaxy_id": galaxy_id,
+            "payment_provider": DEFAULT_PAYMENT_PROVIDER,
+            "aofl_product": self.aofl_product,
+            "expires_timestamp": get_next_billing_time(old_period + period),
+            "next_billing_timestamp": get_next_billing_time(old_period + period),
+            "renewal_status": "active"
+        }
+
+    

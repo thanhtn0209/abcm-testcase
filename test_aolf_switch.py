@@ -191,6 +191,95 @@ class TestAolfHttp(unittest.TestCase):
                     intended_package
                 )
 
+    def _test_for_switch_to_current_one_itself_after_terminating(
+            self,
+            current_package: dict,
+            intended_package: dict
+    ):
+        LOGGER.info({"message": "starting create package"})
+        galaxy_id = str(uuid.uuid4())
+        created_result = aofl_client.aofl_create(
+            galaxy_id=galaxy_id,
+            product_key=current_package.get("product_key"),
+            period=current_package.get("period")
+        )
+        self.assertEqual(created_result[0], "TRUE")
+        time.sleep(3)
+
+        LOGGER.info({"message": "starting terminating package"})
+        termination_result = aofl_client.aofl_terminate(
+            galaxy_id=galaxy_id,
+            product_key=current_package.get("product_key")
+        )
+        self.assertEqual(termination_result, "TRUE")
+        time.sleep(3)
+
+        LOGGER.info({"message": "starting create package"})
+        galaxy_id = str(uuid.uuid4())
+        created_result = aofl_client.aofl_create(
+            galaxy_id=galaxy_id,
+            product_key=intended_package.get("product_key"),
+            period=intended_package.get("period")
+        ),
+        self.assertEqual(created_result[0], "TRUE")
+        time.sleep(3)
+
+    def test_for_switch_to_current_one_itself_after_terminating(self):
+        LOGGER.info({"info": "test_for_switch_to_the_current_one_itself"})
+        packages = [
+            ONE_MONTH_PACKAGE,
+            HALF_YEAR_PACKAGE,
+            ONE_YEAR_PACKAGE
+        ]
+        # if packages = [a, b, c] => cases = [[a, a], [b, b], [c, c]]
+        cases = [[package, package] for package in packages]
+        for index, [current_package, intended_package] in enumerate(cases):
+            with self.subTest(i=index):
+                LOGGER.info({"case": index})
+                self._test_for_switch_to_current_one_itself_after_terminating(
+                    current_package,
+                    intended_package
+                )
+    
+    def _test_for_termination_after_cancellation(self, subs):
+        LOGGER.info({"message": "starting create subscription"})
+        galaxy_id = str(uuid.uuid4())
+        created_result = aofl_client.aofl_create(
+            galaxy_id=galaxy_id,
+            product_key=subs.get("product_key"),
+            period=subs.get("period")
+        )
+        self.assertEqual(created_result, "TRUE")
+        time.sleep(3)
+
+        # cancel_result = aofl_client.aofl_cancel(
+        #     galaxy_id=galaxy_id,
+        #     product_key=subs.get("product_key"),
+        #     period=subs.get("period")
+        # )
+        # self.assertEqual(cancel_result, "TRUE")
+        # time.sleep(3)
+
+        termination_result = aofl_client.aofl_terminate(
+            galaxy_id=galaxy_id,
+            product_key=subs.get("product_key"),
+        )
+        self.assertEqual(termination_result, "TRUE")
+        time.sleep(3)
+    
+    def test_for_termination_after_cancellation(self):
+        cases = [
+            FMF_ONE_MONTH_SUBS, 
+            FMF_HALF_YEAR_SUBS, 
+            FMF_ONE_YEAR_SUB,
+            ONE_MONTH_SUBS,
+            HALF_YEAR_SUBS,
+            ONE_YEAR_SUBS
+        ]
+        for index, subs in enumerate(cases):
+            with self.subTest(i=index):
+                LOGGER.info({"case": index})
+                self._test_for_termination_after_cancellation(subs)
 
 if __name__ == '__main__':
     unittest.main()
